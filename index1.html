@@ -4670,7 +4670,6 @@ function espApplyAndCreateSC(){
 
 /* Obtener lista filtrada actual (reusa lógica de cmp_renderLista) */
 function cmp_getFilteredLista(){
-  if(!window.espSeleccionados) window.espSeleccionados = [];
   const lista = comprasData.listaMateriales;
   const filtroOrigen = (document.getElementById('cmp-filtro-origen')||{}).value||'';
   const filtroTxt    = ((document.getElementById('cmp-filtro-txt')||{}).value||'').toLowerCase();
@@ -4698,15 +4697,21 @@ function cmp_getFilteredLista(){
     if(filtroTxt && !lm.desc.toLowerCase().includes(filtroTxt) && !lm.origenNombre.toLowerCase().includes(filtroTxt)) return false;
     
     /* Filtro espacios: si hay seleccionados, verificar coincidencia */
-    if(espSeleccionados && espSeleccionados.length > 0){
-      const espNorm = (lm.esp || '').toLowerCase().trim();
-      const origNorm = (lm.origenNombre || '').toLowerCase();
-      
-      const match = espSeleccionados.some(esp => {
-        const s = esp.toLowerCase().trim();
-        return espNorm === s || origNorm.includes(s);
-      });
-      if(!match) return false;
+    if(espSeleccionados.length > 0){
+      if(!lm.esp) {
+        /* Si el item no tiene espacio asignado (ej: GG o Partida directa), 
+           podemos intentar buscar en su nombre de origen */
+        const match = espSeleccionados.some(esp => {
+          return lm.origenNombre.toLowerCase().includes(esp.toLowerCase().trim());
+        });
+        if(!match) return false;
+      } else {
+        /* Si tiene espacio asignado, debe coincidir con alguno de los seleccionados */
+        const match = espSeleccionados.some(esp => {
+          return lm.esp.toLowerCase().trim() === esp.toLowerCase().trim();
+        });
+        if(!match) return false;
+      }
     }
     return true;
   });
