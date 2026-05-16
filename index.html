@@ -359,6 +359,8 @@ body{font-family:var(--ff);color:var(--txt);font-size:calc(14px * var(--font-sca
 .cmp-estado.anulada{background:#fee2e2;color:#991b1b}
 .cmp-prov-card{display:grid;grid-template-columns:auto 1fr auto;gap:10px 16px;align-items:center;background:var(--bg2);border:1.5px solid var(--border2);border-radius:9px;padding:12px 16px;margin-bottom:8px}
 /* ── Botón Módulos dropdown ── */
+.mod-dd-item.active-mod { background: var(--navy-lt); border-left: 3px solid var(--navy); }
+.mod-dd-item.active-mod .mod-name { color: var(--navy); }
 .mod-btn-wrap{position:relative;display:inline-flex;align-items:center}
 .mod-btn{height:34px;padding:0 11px;border:1px solid rgba(255,255,255,0.22);border-radius:7px;background:rgba(255,255,255,0.1);cursor:pointer;display:flex;align-items:center;gap:5px;color:rgba(255,255,255,0.9);font-size:11px;font-family:var(--ff);font-weight:600;white-space:nowrap;transition:all .2s;letter-spacing:.2px}
 .mod-btn:hover{background:rgba(255,255,255,0.22);color:#fff;transform:translateY(-1px)}
@@ -866,7 +868,12 @@ body{font-family:var(--ff);color:var(--txt);font-size:calc(14px * var(--font-sca
         </button>
         <div class="mod-dropdown" id="modDropdown">
           <div class="mod-dd-header">Módulos disponibles</div>
-          <div class="mod-dd-item" onclick="switchToModule('compras')">
+          <div class="mod-dd-item active-mod" id="mod-item-presupuesto" onclick="switchToModule('presupuesto')">
+            <span class="mod-icon">📋</span>
+            <span class="mod-name">Presupuesto</span>
+            <span class="mod-status active-s"><span class="mod-dot active"></span>Activo</span>
+          </div>
+          <div class="mod-dd-item" id="mod-item-compras" onclick="switchToModule('compras')">
             <span class="mod-icon">🛒</span>
             <span class="mod-name">Compras</span>
             <span class="mod-status active-s"><span class="mod-dot active"></span>Activo</span>
@@ -903,7 +910,7 @@ body{font-family:var(--ff);color:var(--txt);font-size:calc(14px * var(--font-sca
   </header>
 
   <nav class="tabs no-print">
-    <div class="tabs-list">
+    <div class="tabs-list" id="tabs-list-presupuesto">
       <div class="tab on" onclick="sw('bud',this)">Presupuesto</div>
       <div class="tab" onclick="sw('gg',this)">Gastos Generales</div>
       <div class="tab" id="tab-apu" onclick="sw('apu',this)">Análisis Unitarios</div>
@@ -4538,9 +4545,20 @@ function closeAllDropdowns(){
 }
 function switchToModule(mod){
   closeAllDropdowns();
+  const tabsPres = document.getElementById('tabs-list-presupuesto');
+  const itemPres = document.getElementById('mod-item-presupuesto');
+  const itemComp = document.getElementById('mod-item-compras');
+  
   if(mod==='compras'){
-    /* Módulo Compras - accesible solo mediante sw('compras') programáticamente */
     sw('compras');
+    if(tabsPres) tabsPres.style.display = 'none';
+    if(itemPres) itemPres.classList.remove('active-mod');
+    if(itemComp) itemComp.classList.add('active-mod');
+  } else if(mod==='presupuesto'){
+    sw('bud');
+    if(tabsPres) tabsPres.style.display = 'flex';
+    if(itemPres) itemPres.classList.add('active-mod');
+    if(itemComp) itemComp.classList.remove('active-mod');
   }
 }
 /* Cerrar dropdowns al hacer clic fuera */
