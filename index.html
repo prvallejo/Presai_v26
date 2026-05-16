@@ -1043,9 +1043,12 @@ body{font-family:var(--ff);color:var(--txt);font-size:calc(14px * var(--font-sca
             <select id="cmp-filtro-origen" onchange="cmp_renderLista()"
               style="font-family:var(--ff);font-size:calc(12px * var(--font-scale));padding:5px 10px;border:1.5px solid var(--border2);border-radius:6px;background:var(--bg2);color:var(--txt)">
               <option value="">Todos los orígenes</option>
+              <option value="materiales">Materiales</option>
+              <option value="equipos">Equipos y herramientas</option>
+              <option value="subcontrato">Subcontrato</option>
               <option value="apu">APU</option>
-              <option value="partida">Partida directa</option>
-              <option value="gg">Gastos Generales</option>
+              <option value="partida">Partida sin APUs</option>
+              <option value="gg">Gasto General</option>
             </select>
             <!-- Filtro Espacios -->
             <div class="esp-filter-wrap" id="espFilterWrap">
@@ -4550,13 +4553,25 @@ function switchToModule(mod){
   const itemComp = document.getElementById('mod-item-compras');
   
   if(mod==='compras'){
+    /* Ocultar pestañas de Presupuesto */
+    if(tabsPres) {
+      tabsPres.style.display = 'none';
+      tabsPres.style.visibility = 'hidden';
+    }
+    /* Cambiar a panel de compras */
     sw('compras');
-    if(tabsPres) tabsPres.style.display = 'none';
+    /* Actualizar estado de módulos */
     if(itemPres) itemPres.classList.remove('active-mod');
     if(itemComp) itemComp.classList.add('active-mod');
   } else if(mod==='presupuesto'){
+    /* Mostrar pestañas de Presupuesto */
+    if(tabsPres) {
+      tabsPres.style.display = 'flex';
+      tabsPres.style.visibility = 'visible';
+    }
+    /* Cambiar a panel de presupuesto */
     sw('bud');
-    if(tabsPres) tabsPres.style.display = 'flex';
+    /* Actualizar estado de módulos */
     if(itemPres) itemPres.classList.add('active-mod');
     if(itemComp) itemComp.classList.remove('active-mod');
   }
