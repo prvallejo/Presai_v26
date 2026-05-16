@@ -594,11 +594,11 @@ body{font-family:var(--ff);color:var(--txt);font-size:calc(14px * var(--font-sca
 .ls-foot .lv{font-family:var(--mono);font-size:calc(14px * var(--font-scale));font-weight:600;color:var(--amber)}
 
 /* ── TOF (Cubicaciones) ── */
-.tof-hdr{display:grid;grid-template-columns:130px 240px 68px 68px 68px 68px 90px 30px;background:var(--bg2);border-bottom:1px solid var(--border2);padding:0 8px;align-items:center}
+.tof-hdr{display:grid;grid-template-columns:130px 210px 68px 68px 68px 68px 90px 30px;background:var(--bg2);border-bottom:1px solid var(--border2);padding:0 8px;align-items:center}
 .tof-hdr span{padding:8px 4px;font-size:calc(10px * var(--font-scale));font-weight:600;color:var(--txt2);text-transform:uppercase;display:flex;align-items:center;justify-content:flex-end;line-height:1.2;min-height:32px}
 .tof-hdr span:first-child{justify-content:flex-start}
 .tof-hdr span:nth-child(2){justify-content:flex-start}
-.tof-row{display:grid;grid-template-columns:130px 240px 68px 68px 68px 68px 90px 30px;border-bottom:1px solid var(--border);padding:0 8px;align-items:center}
+.tof-row{display:grid;grid-template-columns:130px 210px 68px 68px 68px 68px 90px 30px;border-bottom:1px solid var(--border);padding:0 8px;align-items:center}
 .tof-row input{font-size:calc(13px * var(--font-scale));padding:6px 4px;border:none;background:transparent;outline:none;width:100%;text-align:right;font-family:var(--mono)}
 .tof-row input:first-child{text-align:left;font-family:var(--ff)}
 .tof-row input:nth-child(2){text-align:left;font-family:var(--ff)}
@@ -2515,21 +2515,25 @@ function renderGGSubgroups(){
         <span class="gg-subgroup-total" style="text-align:right;flex:1;margin-right:10px" data-gg-total="${sgi}">${sym()} ${fmtGG(sgTotal)}</span>
         <button class="bs del" onclick="delGGSubgroup(${sgi})">×</button>
       </div>
-      <table class="gg-table">
-        <thead><tr><th style="width:260px">Descripción</th><th style="width:50px;text-align:right">Unid</th><th style="width:60px;text-align:right">Cant.</th><th style="width:80px;text-align:right">Tiempo Uso</th><th style="width:110px;text-align:right">Precio (${sym()})</th><th style="width:140px;text-align:right">Subtotal (${sym()})</th><th style="width:30px"></th></tr></thead>
-        <tbody>`;
-    sg.items.forEach((it,iti)=>{
-      let sub=N(it.qty)*N(it.tiempoUso)*N(it.price);
-      html+=`<tr>
-        <td><input value="${esc(it.desc)}" oninput="uGGItem(${sgi},${iti},'desc',this.value)"/></td>
-        <td><input class="r" value="${esc(it.unit)}" oninput="uGGItem(${sgi},${iti},'unit',this.value)"/></td>
-        <td><input class="r" type="text" value="${fmtQ(N(it.qty))}" oninput="uGGItem(${sgi},${iti},'qty',this.value)" onfocus="this.select()" onblur="normalizeNumericInput(this)"/></td>
-        <td><input class="r" type="text" value="${fmtQ(N(it.tiempoUso))}" oninput="uGGItem(${sgi},${iti},'tiempoUso',this.value)" onfocus="this.select()" onblur="normalizeNumericInput(this)"/></td>
-        <td><input class="r" type="text" value="${fmtGG(N(it.price))}" oninput="uGGItem(${sgi},${iti},'price',this.value)" onfocus="this.select()" onblur="normalizeNumericInput(this)"/></td>
-        <td class="r mono" style="white-space:nowrap" data-gg-sub="${sgi}-${iti}">${sym()} ${fmtGG(sub)}</td>
-        <td><button class="bs del" onclick="delGGItem(${sgi},${iti})">×</button></td>
-      </tr>`;
-    });
+	      <table class="gg-table">
+	        <thead><tr>
+            ${(!sg.name.toLowerCase().includes('personal')) ? '<th style="width:30px"></th>' : ''}
+            <th style="width:260px">Descripción</th><th style="width:50px;text-align:right">Unid</th><th style="width:60px;text-align:right">Cant.</th><th style="width:80px;text-align:right">Tiempo Uso</th><th style="width:110px;text-align:right">Precio (${sym()})</th><th style="width:140px;text-align:right">Subtotal (${sym()})</th><th style="width:30px"></th></tr></thead>
+	        <tbody>`;
+	    sg.items.forEach((it,iti)=>{
+	      let sub=N(it.qty)*N(it.tiempoUso)*N(it.price);
+        let isPers = sg.name.toLowerCase().includes('personal');
+	      html+=`<tr>
+            ${(!isPers) ? `<td><input type="checkbox" ${it.inSC?'checked':''} onchange="uGGItem(${sgi},${iti},'inSC',this.checked)" style="accent-color:var(--navy)"/></td>` : ''}
+	        <td><input value="${esc(it.desc)}" oninput="uGGItem(${sgi},${iti},'desc',this.value)"/></td>
+	        <td><input class="r" value="${esc(it.unit)}" oninput="uGGItem(${sgi},${iti},'unit',this.value)"/></td>
+	        <td><input class="r" type="text" value="${fmtQ(N(it.qty))}" oninput="uGGItem(${sgi},${iti},'qty',this.value)" onfocus="this.select()" onblur="normalizeNumericInput(this)"/></td>
+	        <td><input class="r" type="text" value="${fmtQ(N(it.tiempoUso))}" oninput="uGGItem(${sgi},${iti},'tiempoUso',this.value)" onfocus="this.select()" onblur="normalizeNumericInput(this)"/></td>
+	        <td><input class="r" type="text" value="${fmtGG(N(it.price))}" oninput="uGGItem(${sgi},${iti},'price',this.value)" onfocus="this.select()" onblur="normalizeNumericInput(this)"/></td>
+	        <td class="r mono" style="white-space:nowrap" data-gg-sub="${sgi}-${iti}">${sym()} ${fmtGG(sub)}</td>
+	        <td><button class="bs del" onclick="delGGItem(${sgi},${iti})">×</button></td>
+	      </tr>`;
+	    });
     html+=`</tbody></table><button class="bs addp" style="margin-top:8px" onclick="addGGItem(${sgi})">+ Gasto General</button></div>`;
   });
   container.innerHTML=html;
@@ -2547,6 +2551,10 @@ function delGGSubgroup(sgi){if(confirm('¿Eliminar subgrupo?')){pushUndoMain();g
 function addGGItem(sgi){pushUndoMain();ggSubgroups[sgi].items.push({id:gid(),desc:'',unit:'',qty:1,price:0,tiempoUso:1});renderGGSubgroups();markUnsaved();}
 function uGGItem(sgi,iti,f,v){
   if(f==='qty'||f==='price'||f==='tiempoUso')v=parseNum(v);
+  if(f==='inSC' && v) {
+    /* Al marcar para SC, forzar reconstrucción de lista de materiales */
+    setTimeout(() => cmp_buildLista(), 0);
+  }
   ggSubgroups[sgi].items[iti][f]=v;
   let r=ggSubgroups[sgi].items[iti];
   let sub=N(r.qty)*N(r.tiempoUso)*N(r.price);
@@ -2871,14 +2879,14 @@ function renderTof(id){
     let ph='style="color:var(--txt3)"';
     let espVal=r.esp||'';
     html+=`<div class="tof-row" style="${isExt?'margin-bottom:12px;background:#fff;padding:8px;border:1px solid var(--border);border-radius:6px;box-shadow:0 2px 4px rgba(0,0,0,0.05);':''}">
-      <input class="tof-espacio-input" value="${esc(espVal)}" list="tof-spaces-datalist" oninput="utof('${id}',${ri},'esp',this.value)" onblur="utofBlur('${id}',${ri},'esp',this.value)" placeholder="Espacio…"/>
-      <input value="${esc(r.desc)}" oninput="utof('${id}',${ri},'desc',this.value)" placeholder="Descripción..."/>
-      <input class="r" type="text" value="${vn}" placeholder="1" oninput="utof('${id}',${ri},'n',this.value)" onfocus="this.select()" onblur="normalizeNumericInput(this)"/>
-      <input class="r" type="text" value="${va}" placeholder="1" oninput="utof('${id}',${ri},'a',this.value)" onfocus="this.select()" onblur="normalizeNumericInput(this)"/>
-      <input class="r" type="text" value="${vl}" placeholder="1" oninput="utof('${id}',${ri},'l',this.value)" onfocus="this.select()" onblur="normalizeNumericInput(this)"/>
-      <input class="r" type="text" value="${vh}" placeholder="1" oninput="utof('${id}',${ri},'h',this.value)" onfocus="this.select()" onblur="normalizeNumericInput(this)"/>
-      <div class="st" id="tof-sub-${id}-${ri}">${totDisplay}</div>
-      <button class="bs del" onclick="dtof('${id}',${ri})">×</button></div>`;
+	      <input class="tof-espacio-input" value="${esc(espVal)}" list="tof-spaces-datalist" oninput="utof('${id}',${ri},'esp',this.value)" onblur="utofBlur('${id}',${ri},'esp',this.value)" placeholder="Espacio…"/>
+	      <input value="${esc(r.desc)}" oninput="utof('${id}',${ri},'desc',this.value)" placeholder="Descripción..."/>
+	      <input class="r" type="text" value="${vn}" placeholder="1" oninput="utof('${id}',${ri},'n',this.value)" onfocus="this.select()" onblur="normalizeNumericInput(this)"/>
+	      <input class="r" type="text" value="${va}" placeholder="1" oninput="utof('${id}',${ri},'a',this.value)" onfocus="this.select()" onblur="normalizeNumericInput(this)"/>
+	      <input class="r" type="text" value="${vl}" placeholder="1" oninput="utof('${id}',${ri},'l',this.value)" onfocus="this.select()" onblur="normalizeNumericInput(this)"/>
+	      <input class="r" type="text" value="${vh}" placeholder="1" oninput="utof('${id}',${ri},'h',this.value)" onfocus="this.select()" onblur="normalizeNumericInput(this)"/>
+	      <div class="st" id="tof-sub-${id}-${ri}">${totDisplay}</div>
+	      <button class="bs del" onclick="dtof('${id}',${ri})">×</button></div>`;
   });
   let total=rows.reduce((x,r)=>x+(N(r.n)*N(r.a)*N(r.l)*N(r.h)),0);
   html+=`<button class="bs addp" style="margin:10px" onclick="atof('${id}')">+ Agregar Fila</button>
@@ -4734,9 +4742,11 @@ function cmp_buildLista(){
       enSC:[]
     });
   });
-  /* Fuente 3: Gastos Generales */
+  /* Fuente 3: Gastos Generales (solo si están marcados inSC o no son de personal) */
   ggSubgroups.forEach(sg=>{
+    let isPers = sg.name.toLowerCase().includes('personal');
     sg.items.filter(r=>r.desc&&r.desc.trim()!=='').forEach(r=>{
+      if(!isPers && !r.inSC) return; /* Solo incluir si está marcado (excepto personal que no tiene check) */
       lista.push({
         id:'lm_'+Math.random().toString(36).substr(2,8),
         origen:'gg', origenId:sg.name, origenNombre:'GG: '+sg.name,
