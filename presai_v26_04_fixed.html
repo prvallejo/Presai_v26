@@ -1,0 +1,1508 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PresAI - Presupuestador Solar + Construcción</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      overflow: hidden;
+    }
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 30px;
+      text-align: center;
+    }
+    .header h1 {
+      font-size: 2.5em;
+      margin-bottom: 10px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    }
+    .header p {
+      font-size: 1.1em;
+      opacity: 0.95;
+    }
+    .tabs {
+      display: flex;
+      background: #f8f9fa;
+      border-bottom: 2px solid #e0e0e0;
+      overflow-x: auto;
+    }
+    .tab {
+      padding: 16px 24px;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      font-size: 16px;
+      font-weight: 500;
+      color: #666;
+      transition: all 0.3s ease;
+      white-space: nowrap;
+      position: relative;
+    }
+    .tab:hover {
+      background: rgba(102, 126, 234, 0.1);
+      color: #667eea;
+    }
+    .tab.active {
+      color: #667eea;
+      background: white;
+    }
+    .tab.active::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #667eea, #764ba2);
+    }
+    .tab-content {
+      display: none;
+      padding: 30px;
+      animation: fadeIn 0.3s ease;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .section {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      border: 1px solid #e0e0e0;
+    }
+    .section h2 {
+      color: #667eea;
+      margin-bottom: 15px;
+      font-size: 1.4em;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      color: #333;
+      font-weight: 500;
+    }
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 10px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 14px;
+      transition: border-color 0.3s;
+    }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+    .btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+    .btn-secondary {
+      background: #6c757d;
+      color: white;
+    }
+    .btn-success {
+      background: #28a745;
+      color: white;
+    }
+    .btn-danger {
+      background: #dc3545;
+      color: white;
+    }
+    .btn-warning {
+      background: #ffc107;
+      color: #333;
+    }
+    .btn-small {
+      padding: 6px 12px;
+      font-size: 13px;
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+    .grid-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 15px;
+    }
+    .grid-4 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1fr;
+      gap: 15px;
+    }
+    .alert {
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .alert-info {
+      background: #d1ecf1;
+      color: #0c5460;
+      border: 1px solid #bee5eb;
+    }
+    .alert-success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    .alert-warning {
+      background: #fff3cd;
+      color: #856404;
+      border: 1px solid #ffeaa7;
+    }
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+    .card h3 {
+      color: #667eea;
+      margin-bottom: 15px;
+      font-size: 1.2em;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+      background: white;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    thead {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+    th {
+      padding: 12px;
+      text-align: left;
+      font-weight: 600;
+      font-size: 14px;
+    }
+    td {
+      padding: 12px;
+      border-bottom: 1px solid #e0e0e0;
+      font-size: 14px;
+    }
+    tbody tr:hover {
+      background: #f8f9fa;
+    }
+    .total-row {
+      background: #f8f9fa;
+      font-weight: bold;
+      color: #667eea;
+    }
+    .modulo-card {
+      background: white;
+      border: 2px solid #e0e0e0;
+      border-radius: 12px;
+      margin-bottom: 15px;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+    .modulo-card:hover {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .modulo-header {
+      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+      padding: 15px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+    }
+    .modulo-header.activo {
+      background: linear-gradient(135deg, #e3e7ff 0%, #d4d9f7 100%);
+      border-left: 4px solid #667eea;
+    }
+    .modulo-header.activo.abierto {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+    .modulo-header h3 {
+      margin: 0;
+      color: #333;
+      font-size: 1.1em;
+    }
+    .modulo-header.activo.abierto h3 {
+      color: white;
+    }
+    .modulo-body {
+      display: none;
+      padding: 20px;
+      background: #fafbfc;
+    }
+    .modulo-body.show {
+      display: block;
+    }
+    .partida-item {
+      background: white;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 10px;
+    }
+    .partida-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .partida-header h4 {
+      color: #667eea;
+      font-size: 1em;
+      margin: 0;
+    }
+    .item-row {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr 1fr 100px;
+      gap: 10px;
+      padding: 10px;
+      background: #f8f9fa;
+      border-radius: 6px;
+      margin-bottom: 8px;
+      align-items: center;
+    }
+    .item-row input,
+    .item-row select {
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 13px;
+    }
+    .item-row input:focus,
+    .item-row select:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(4px);
+    }
+    .modal-content {
+      background: white;
+      border-radius: 16px;
+      padding: 30px;
+      max-width: 600px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      animation: modalSlideIn 0.3s ease;
+    }
+    @keyframes modalSlideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid #e0e0e0;
+    }
+    .modal-header h2 {
+      color: #667eea;
+      margin: 0;
+    }
+    .close-modal {
+      background: none;
+      border: none;
+      font-size: 28px;
+      cursor: pointer;
+      color: #999;
+      transition: color 0.3s;
+      padding: 0;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .close-modal:hover {
+      color: #dc3545;
+    }
+    .filter-bar {
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .filter-bar label {
+      font-weight: 600;
+      color: #333;
+    }
+    .filter-bar select {
+      padding: 8px 12px;
+      border: 2px solid #e0e0e0;
+      border-radius: 6px;
+      font-size: 14px;
+      min-width: 150px;
+    }
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    .summary-card {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      border-left: 4px solid #667eea;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .summary-card h4 {
+      color: #666;
+      font-size: 0.9em;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .summary-card .value {
+      font-size: 1.8em;
+      font-weight: bold;
+      color: #667eea;
+    }
+    @media (max-width: 768px) {
+      .grid-2, .grid-3, .grid-4 {
+        grid-template-columns: 1fr;
+      }
+      .item-row {
+        grid-template-columns: 1fr;
+      }
+      .tabs {
+        overflow-x: scroll;
+      }
+      .header h1 {
+        font-size: 1.8em;
+      }
+    }
+    .highlight {
+      background: #fff3cd;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-left: 8px;
+    }
+    .badge-material {
+      background: #d4edda;
+      color: #155724;
+    }
+    .badge-mano-obra {
+      background: #cce5ff;
+      color: #004085;
+    }
+    .badge-subcontrato {
+      background: #fff3cd;
+      color: #856404;
+    }
+    .badge-equipo {
+      background: #f8d7da;
+      color: #721c24;
+    }
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background: #e0e0e0;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 10px;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #667eea, #764ba2);
+      transition: width 0.3s ease;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>⚡ PresAI</h1>
+      <p>Presupuestador Inteligente - Solar + Construcción</p>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="proyecto">📋 Proyecto</button>
+      <button class="tab" data-tab="modulos">🏗️ Módulos & Partidas</button>
+      <button class="tab" data-tab="resumen">📊 Resumen</button>
+      <button class="tab" data-tab="exportar">💾 Exportar</button>
+    </div>
+
+    <!-- TAB: PROYECTO -->
+    <div id="tab-proyecto" class="tab-content active">
+      <div class="section">
+        <h2>📋 Información del Proyecto</h2>
+        <div class="grid-2">
+          <div class="form-group">
+            <label>Nombre del Proyecto</label>
+            <input type="text" id="nombreProyecto" placeholder="Ej: Sistema Solar 10kW Residencial">
+          </div>
+          <div class="form-group">
+            <label>Cliente</label>
+            <input type="text" id="clienteProyecto" placeholder="Nombre del cliente">
+          </div>
+          <div class="form-group">
+            <label>Ubicación</label>
+            <input type="text" id="ubicacionProyecto" placeholder="Dirección o comuna">
+          </div>
+          <div class="form-group">
+            <label>Fecha</label>
+            <input type="date" id="fechaProyecto">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Descripción</label>
+          <textarea id="descripcionProyecto" rows="3" placeholder="Descripción breve del proyecto..."></textarea>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>⚙️ Parámetros Generales</h2>
+        <div class="grid-3">
+          <div class="form-group">
+            <label>Margen (%)</label>
+            <input type="number" id="margenGeneral" value="25" step="0.1" min="0">
+          </div>
+          <div class="form-group">
+            <label>IVA (%)</label>
+            <input type="number" id="ivaGeneral" value="19" step="0.1" min="0">
+          </div>
+          <div class="form-group">
+            <label>Moneda</label>
+            <select id="monedaGeneral">
+              <option value="CLP">CLP ($)</option>
+              <option value="USD">USD ($)</option>
+              <option value="UF">UF</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: MÓDULOS & PARTIDAS -->
+    <div id="tab-modulos" class="tab-content">
+      <div class="section">
+        <h2>🏗️ Gestión de Módulos y Partidas</h2>
+        <button class="btn btn-primary" onclick="abrirModalNuevoModulo()">➕ Nuevo Módulo</button>
+        <button class="btn btn-secondary" onclick="guardarProyecto()">💾 Guardar Proyecto</button>
+        <button class="btn btn-secondary" onclick="cargarProyecto()">📂 Cargar Proyecto</button>
+      </div>
+
+      <div class="filter-bar">
+        <label>Filtrar por:</label>
+        <select id="filtroCategoriaGlobal" onchange="aplicarFiltroGlobal()">
+          <option value="">Todas las categorías</option>
+          <option value="Material">📦 Material</option>
+          <option value="Mano de Obra">👷 Mano de Obra</option>
+          <option value="Subcontrato">🔧 Subcontrato</option>
+          <option value="Equipo">🚜 Equipo</option>
+        </select>
+        
+        <button class="btn btn-small btn-secondary" onclick="abrirModalProveedoresSubcontrato()" id="btnFiltrarProveedores">
+          🏢 Filtrar Proveedores +SC
+        </button>
+      </div>
+
+      <div id="modulosContainer"></div>
+    </div>
+
+    <!-- TAB: RESUMEN -->
+    <div id="tab-resumen" class="tab-content">
+      <div class="section">
+        <h2>📊 Resumen del Presupuesto</h2>
+        <div class="summary-grid" id="summaryCards"></div>
+      </div>
+
+      <div class="section">
+        <h2>📋 Detalle por Módulo</h2>
+        <div id="resumenModulos"></div>
+      </div>
+
+      <div class="section">
+        <h2>💰 Totales Finales</h2>
+        <div id="totalesFinales"></div>
+      </div>
+    </div>
+
+    <!-- TAB: EXPORTAR -->
+    <div id="tab-exportar" class="tab-content">
+      <div class="section">
+        <h2>💾 Exportar Presupuesto</h2>
+        <div class="alert alert-info">
+          <span>ℹ️</span>
+          <span>Aquí podrás exportar el presupuesto en diferentes formatos.</span>
+        </div>
+        <div class="grid-2">
+          <button class="btn btn-success" onclick="exportarExcel()">📊 Exportar a Excel</button>
+          <button class="btn btn-danger" onclick="exportarPDF()">📄 Exportar a PDF</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: NUEVO MÓDULO -->
+  <div id="modalNuevoModulo" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Nuevo Módulo</h2>
+        <button class="close-modal" onclick="cerrarModal('modalNuevoModulo')">&times;</button>
+      </div>
+      <div class="form-group">
+        <label>Nombre del Módulo</label>
+        <input type="text" id="nuevoModuloNombre" placeholder="Ej: Sistema Fotovoltaico">
+      </div>
+      <div class="form-group">
+        <label>Descripción</label>
+        <textarea id="nuevoModuloDescripcion" rows="3" placeholder="Descripción opcional..."></textarea>
+      </div>
+      <button class="btn btn-primary" onclick="crearModulo()">Crear Módulo</button>
+    </div>
+  </div>
+
+  <!-- MODAL: NUEVA PARTIDA -->
+  <div id="modalNuevaPartida" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Nueva Partida</h2>
+        <button class="close-modal" onclick="cerrarModal('modalNuevaPartida')">&times;</button>
+      </div>
+      <div class="form-group">
+        <label>Nombre de la Partida</label>
+        <input type="text" id="nuevaPartidaNombre" placeholder="Ej: Paneles Solares">
+      </div>
+      <button class="btn btn-primary" onclick="crearPartida()">Crear Partida</button>
+    </div>
+  </div>
+
+  <!-- MODAL: FILTRO PROVEEDORES SUBCONTRATO -->
+  <div id="modalProveedoresSubcontrato" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Filtrar por Proveedores de Subcontrato</h2>
+        <button class="close-modal" onclick="cerrarModalProveedoresSubcontrato()">&times;</button>
+      </div>
+      <div id="checkboxProveedoresSubcontrato" style="max-height: 400px; overflow-y: auto;"></div>
+      <div style="margin-top: 20px; display: flex; gap: 10px;">
+        <button class="btn btn-primary" onclick="aplicarFiltroProveedores()">Aplicar Filtro</button>
+        <button class="btn btn-secondary" onclick="limpiarFiltroProveedores()">Limpiar Filtro</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ==================== ESTADO GLOBAL ====================
+    const state = {
+      proyecto: {
+        nombre: '',
+        cliente: '',
+        ubicacion: '',
+        fecha: '',
+        descripcion: ''
+      },
+      parametros: {
+        margen: 25,
+        iva: 19,
+        moneda: 'CLP'
+      },
+      modulos: [],
+      moduloActivo: null,
+      filtroCategoriaGlobal: '',
+      filtroProveedoresSubcontrato: new Set()
+    };
+
+    let moduloIdCounter = 0;
+    let partidaIdCounter = 0;
+    let itemIdCounter = 0;
+
+    // ==================== INICIALIZACIÓN ====================
+    document.addEventListener('DOMContentLoaded', () => {
+      cargarDatosIniciales();
+      renderizarModulos();
+      actualizarResumen();
+      configurarTabs();
+      configurarEventListeners();
+    });
+
+    function cargarDatosIniciales() {
+      const hoy = new Date().toISOString().split('T')[0];
+      document.getElementById('fechaProyecto').value = hoy;
+    }
+
+    function configurarTabs() {
+      const tabs = document.querySelectorAll('.tab');
+      tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          const targetTab = tab.dataset.tab;
+          tabs.forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          
+          document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.remove('active');
+          });
+          document.getElementById(`tab-${targetTab}`).classList.add('active');
+          
+          if (targetTab === 'resumen') {
+            actualizarResumen();
+          }
+        });
+      });
+    }
+
+    function configurarEventListeners() {
+      document.getElementById('nombreProyecto').addEventListener('input', (e) => {
+        state.proyecto.nombre = e.target.value;
+      });
+      document.getElementById('clienteProyecto').addEventListener('input', (e) => {
+        state.proyecto.cliente = e.target.value;
+      });
+      document.getElementById('ubicacionProyecto').addEventListener('input', (e) => {
+        state.proyecto.ubicacion = e.target.value;
+      });
+      document.getElementById('fechaProyecto').addEventListener('input', (e) => {
+        state.proyecto.fecha = e.target.value;
+      });
+      document.getElementById('descripcionProyecto').addEventListener('input', (e) => {
+        state.proyecto.descripcion = e.target.value;
+      });
+      
+      document.getElementById('margenGeneral').addEventListener('input', (e) => {
+        state.parametros.margen = parseFloat(e.target.value) || 0;
+        actualizarResumen();
+      });
+      document.getElementById('ivaGeneral').addEventListener('input', (e) => {
+        state.parametros.iva = parseFloat(e.target.value) || 0;
+        actualizarResumen();
+      });
+      document.getElementById('monedaGeneral').addEventListener('change', (e) => {
+        state.parametros.moneda = e.target.value;
+        actualizarResumen();
+      });
+    }
+
+    // ==================== GESTIÓN DE MÓDULOS ====================
+    function abrirModalNuevoModulo() {
+      document.getElementById('modalNuevoModulo').style.display = 'flex';
+      document.getElementById('nuevoModuloNombre').value = '';
+      document.getElementById('nuevoModuloDescripcion').value = '';
+    }
+
+    function crearModulo() {
+      const nombre = document.getElementById('nuevoModuloNombre').value.trim();
+      if (!nombre) {
+        alert('Por favor ingresa un nombre para el módulo');
+        return;
+      }
+      
+      const nuevoModulo = {
+        id: ++moduloIdCounter,
+        nombre: nombre,
+        descripcion: document.getElementById('nuevoModuloDescripcion').value.trim(),
+        partidas: [],
+        abierto: false
+      };
+      
+      state.modulos.push(nuevoModulo);
+      cerrarModal('modalNuevoModulo');
+      renderizarModulos();
+    }
+
+    function toggleModulo(moduloId) {
+      const modulo = state.modulos.find(m => m.id === moduloId);
+      if (!modulo) return;
+      
+      // Si el módulo ya estaba activo y abierto, lo cerramos
+      if (state.moduloActivo === moduloId && modulo.abierto) {
+        modulo.abierto = false;
+        state.moduloActivo = null;
+      } else {
+        // Cerramos todos los demás
+        state.modulos.forEach(m => {
+          if (m.id !== moduloId) m.abierto = false;
+        });
+        // Abrimos el clickeado
+        modulo.abierto = true;
+        state.moduloActivo = moduloId;
+      }
+      
+      renderizarModulos();
+    }
+
+    function eliminarModulo(moduloId) {
+      if (!confirm('¿Estás seguro de eliminar este módulo?')) return;
+      state.modulos = state.modulos.filter(m => m.id !== moduloId);
+      if (state.moduloActivo === moduloId) {
+        state.moduloActivo = null;
+      }
+      renderizarModulos();
+      actualizarResumen();
+    }
+
+    // ==================== GESTIÓN DE PARTIDAS ====================
+    function abrirModalNuevaPartida(moduloId) {
+      state.moduloActivo = moduloId;
+      document.getElementById('modalNuevaPartida').style.display = 'flex';
+      document.getElementById('nuevaPartidaNombre').value = '';
+    }
+
+    function crearPartida() {
+      const nombre = document.getElementById('nuevaPartidaNombre').value.trim();
+      if (!nombre) {
+        alert('Por favor ingresa un nombre para la partida');
+        return;
+      }
+      
+      const modulo = state.modulos.find(m => m.id === state.moduloActivo);
+      if (!modulo) return;
+      
+      const nuevaPartida = {
+        id: ++partidaIdCounter,
+        nombre: nombre,
+        items: []
+      };
+      
+      modulo.partidas.push(nuevaPartida);
+      cerrarModal('modalNuevaPartida');
+      renderizarModulos();
+    }
+
+    function eliminarPartida(moduloId, partidaId) {
+      if (!confirm('¿Estás seguro de eliminar esta partida?')) return;
+      const modulo = state.modulos.find(m => m.id === moduloId);
+      if (!modulo) return;
+      
+      modulo.partidas = modulo.partidas.filter(p => p.id !== partidaId);
+      renderizarModulos();
+      actualizarResumen();
+    }
+
+    // ==================== GESTIÓN DE ITEMS ====================
+    function agregarItem(moduloId, partidaId) {
+      const modulo = state.modulos.find(m => m.id === moduloId);
+      if (!modulo) return;
+      
+      const partida = modulo.partidas.find(p => p.id === partidaId);
+      if (!partida) return;
+      
+      const nuevoItem = {
+        id: ++itemIdCounter,
+        descripcion: '',
+        cantidad: 1,
+        unidad: 'un',
+        precioUnitario: 0,
+        categoria: 'Material',
+        proveedor: ''
+      };
+      
+      partida.items.push(nuevoItem);
+      renderizarModulos();
+    }
+
+    function eliminarItem(moduloId, partidaId, itemId) {
+      const modulo = state.modulos.find(m => m.id === moduloId);
+      if (!modulo) return;
+      
+      const partida = modulo.partidas.find(p => p.id === partidaId);
+      if (!partida) return;
+      
+      partida.items = partida.items.filter(it => it.id !== itemId);
+      renderizarModulos();
+      actualizarResumen();
+    }
+
+    function actualizarItem(moduloId, partidaId, itemId, campo, valor) {
+      const modulo = state.modulos.find(m => m.id === moduloId);
+      if (!modulo) return;
+      
+      const partida = modulo.partidas.find(p => p.id === partidaId);
+      if (!partida) return;
+      
+      const item = partida.items.find(it => it.id === itemId);
+      if (!item) return;
+      
+      if (campo === 'cantidad' || campo === 'precioUnitario') {
+        item[campo] = parseFloat(valor) || 0;
+      } else {
+        item[campo] = valor;
+      }
+      
+      renderizarModulos();
+      actualizarResumen();
+    }
+
+    // ==================== FILTROS ====================
+    function aplicarFiltroGlobal() {
+      const selectCategoria = document.getElementById('filtroCategoriaGlobal');
+      state.filtroCategoriaGlobal = selectCategoria.value;
+      renderizarModulos();
+    }
+
+    function abrirModalProveedoresSubcontrato() {
+      const modal = document.getElementById('modalProveedoresSubcontrato');
+      if (!modal) {
+        console.error('Modal modalProveedoresSubcontrato no encontrado');
+        return;
+      }
+      
+      const container = document.getElementById('checkboxProveedoresSubcontrato');
+      if (!container) {
+        console.error('Container checkboxProveedoresSubcontrato no encontrado');
+        return;
+      }
+      
+      container.innerHTML = '';
+      
+      const todosProveedores = new Set();
+      state.modulos.forEach(mod => {
+        mod.partidas.forEach(p => {
+          p.items.forEach(it => {
+            if (it.categoria === 'Subcontrato' && it.proveedor && it.proveedor.trim()) {
+              todosProveedores.add(it.proveedor.trim());
+            }
+          });
+        });
+      });
+      
+      const provArray = Array.from(todosProveedores).sort();
+      
+      if (provArray.length === 0) {
+        container.innerHTML = '<p style="color:#888; padding: 20px; text-align: center;">No hay proveedores de subcontrato disponibles. Primero agrega items con categoría "Subcontrato" y define sus proveedores.</p>';
+      } else {
+        provArray.forEach(prov => {
+          const label = document.createElement('label');
+          label.style.display = 'block';
+          label.style.marginBottom = '12px';
+          label.style.padding = '8px';
+          label.style.cursor = 'pointer';
+          label.style.borderRadius = '6px';
+          label.style.transition = 'background 0.2s';
+          
+          label.addEventListener('mouseenter', () => {
+            label.style.background = '#f8f9fa';
+          });
+          label.addEventListener('mouseleave', () => {
+            label.style.background = 'transparent';
+          });
+          
+          const checkbox = document.createElement('input');
+          checkbox.type = 'checkbox';
+          checkbox.value = prov;
+          checkbox.checked = state.filtroProveedoresSubcontrato.has(prov);
+          checkbox.style.marginRight = '10px';
+          checkbox.style.cursor = 'pointer';
+          
+          checkbox.addEventListener('change', (e) => {
+            if (e.target.checked) {
+              state.filtroProveedoresSubcontrato.add(prov);
+            } else {
+              state.filtroProveedoresSubcontrato.delete(prov);
+            }
+          });
+          
+          const text = document.createTextNode(prov);
+          
+          label.appendChild(checkbox);
+          label.appendChild(text);
+          container.appendChild(label);
+        });
+      }
+      
+      modal.style.display = 'flex';
+      console.log('Modal de proveedores subcontrato abierto. Proveedores encontrados:', provArray.length);
+    }
+
+    function cerrarModalProveedoresSubcontrato() {
+      document.getElementById('modalProveedoresSubcontrato').style.display = 'none';
+    }
+
+    function aplicarFiltroProveedores() {
+      cerrarModalProveedoresSubcontrato();
+      renderizarModulos();
+    }
+
+    function limpiarFiltroProveedores() {
+      state.filtroProveedoresSubcontrato.clear();
+      const checkboxes = document.querySelectorAll('#checkboxProveedoresSubcontrato input[type="checkbox"]');
+      checkboxes.forEach(cb => cb.checked = false);
+      cerrarModalProveedoresSubcontrato();
+      renderizarModulos();
+    }
+
+    // ==================== RENDERIZADO ====================
+    function renderizarModulos() {
+      const container = document.getElementById('modulosContainer');
+      if (!container) return;
+      
+      if (state.modulos.length === 0) {
+        container.innerHTML = '<div class="alert alert-info"><span>ℹ️</span><span>No hay módulos creados. Haz clic en "Nuevo Módulo" para comenzar.</span></div>';
+        return;
+      }
+      
+      container.innerHTML = '';
+      
+      state.modulos.forEach(modulo => {
+        const moduloCard = document.createElement('div');
+        moduloCard.className = 'modulo-card';
+        
+        const esActivo = state.moduloActivo === modulo.id;
+        const esAbierto = modulo.abierto;
+        
+        const moduloHeader = document.createElement('div');
+        moduloHeader.className = 'modulo-header';
+        if (esActivo && esAbierto) {
+          moduloHeader.classList.add('activo', 'abierto');
+        } else if (esActivo) {
+          moduloHeader.classList.add('activo');
+        }
+        
+        moduloHeader.onclick = () => toggleModulo(modulo.id);
+        
+        const headerLeft = document.createElement('div');
+        const h3 = document.createElement('h3');
+        h3.textContent = `${modulo.nombre}`;
+        if (modulo.descripcion) {
+          const small = document.createElement('small');
+          small.style.fontWeight = 'normal';
+          small.style.marginLeft = '10px';
+          small.style.opacity = '0.8';
+          small.textContent = `- ${modulo.descripcion}`;
+          h3.appendChild(small);
+        }
+        headerLeft.appendChild(h3);
+        
+        const headerRight = document.createElement('div');
+        headerRight.style.display = 'flex';
+        headerRight.style.gap = '10px';
+        headerRight.style.alignItems = 'center';
+        
+        const btnNuevaPartida = document.createElement('button');
+        btnNuevaPartida.className = 'btn btn-small btn-primary';
+        btnNuevaPartida.textContent = '➕ Partida';
+        btnNuevaPartida.onclick = (e) => {
+          e.stopPropagation();
+          abrirModalNuevaPartida(modulo.id);
+        };
+        
+        const btnEliminarModulo = document.createElement('button');
+        btnEliminarModulo.className = 'btn btn-small btn-danger';
+        btnEliminarModulo.textContent = '🗑️';
+        btnEliminarModulo.onclick = (e) => {
+          e.stopPropagation();
+          eliminarModulo(modulo.id);
+        };
+        
+        const toggleIcon = document.createElement('span');
+        toggleIcon.textContent = esAbierto ? '▼' : '▶';
+        toggleIcon.style.fontSize = '1.2em';
+        toggleIcon.style.marginLeft = '10px';
+        
+        headerRight.appendChild(btnNuevaPartida);
+        headerRight.appendChild(btnEliminarModulo);
+        headerRight.appendChild(toggleIcon);
+        
+        moduloHeader.appendChild(headerLeft);
+        moduloHeader.appendChild(headerRight);
+        
+        const moduloBody = document.createElement('div');
+        moduloBody.className = 'modulo-body';
+        if (esAbierto) {
+          moduloBody.classList.add('show');
+        }
+        
+        if (modulo.partidas.length === 0) {
+          moduloBody.innerHTML = '<p style="color:#999; padding: 20px;">No hay partidas en este módulo.</p>';
+        } else {
+          modulo.partidas.forEach(partida => {
+            renderizarPartida(moduloBody, modulo.id, partida);
+          });
+        }
+        
+        moduloCard.appendChild(moduloHeader);
+        moduloCard.appendChild(moduloBody);
+        container.appendChild(moduloCard);
+      });
+    }
+
+    function renderizarPartida(container, moduloId, partida) {
+      const partidaDiv = document.createElement('div');
+      partidaDiv.className = 'partida-item';
+      
+      const partidaHeader = document.createElement('div');
+      partidaHeader.className = 'partida-header';
+      
+      const h4 = document.createElement('h4');
+      h4.textContent = partida.nombre;
+      
+      const btnGroup = document.createElement('div');
+      btnGroup.style.display = 'flex';
+      btnGroup.style.gap = '8px';
+      
+      const btnAgregarItem = document.createElement('button');
+      btnAgregarItem.className = 'btn btn-small btn-success';
+      btnAgregarItem.textContent = '➕ Item';
+      btnAgregarItem.onclick = () => agregarItem(moduloId, partida.id);
+      
+      const btnEliminarPartida = document.createElement('button');
+      btnEliminarPartida.className = 'btn btn-small btn-danger';
+      btnEliminarPartida.textContent = '🗑️';
+      btnEliminarPartida.onclick = () => eliminarPartida(moduloId, partida.id);
+      
+      btnGroup.appendChild(btnAgregarItem);
+      btnGroup.appendChild(btnEliminarPartida);
+      
+      partidaHeader.appendChild(h4);
+      partidaHeader.appendChild(btnGroup);
+      
+      partidaDiv.appendChild(partidaHeader);
+      
+      if (partida.items.length === 0) {
+        const emptyMsg = document.createElement('p');
+        emptyMsg.style.color = '#999';
+        emptyMsg.style.padding = '10px';
+        emptyMsg.textContent = 'No hay items en esta partida.';
+        partidaDiv.appendChild(emptyMsg);
+      } else {
+        const itemsFiltered = partida.items.filter(item => {
+          let pasaFiltroCategoria = true;
+          let pasaFiltroProveedor = true;
+          
+          if (state.filtroCategoriaGlobal) {
+            pasaFiltroCategoria = item.categoria === state.filtroCategoriaGlobal;
+          }
+          
+          if (state.filtroProveedoresSubcontrato.size > 0) {
+            if (item.categoria === 'Subcontrato') {
+              pasaFiltroProveedor = state.filtroProveedoresSubcontrato.has(item.proveedor);
+            } else {
+              pasaFiltroProveedor = false;
+            }
+          }
+          
+          return pasaFiltroCategoria && pasaFiltroProveedor;
+        });
+        
+        if (itemsFiltered.length === 0) {
+          const emptyMsg = document.createElement('p');
+          emptyMsg.style.color = '#999';
+          emptyMsg.style.padding = '10px';
+          emptyMsg.textContent = 'No hay items que coincidan con los filtros aplicados.';
+          partidaDiv.appendChild(emptyMsg);
+        } else {
+          itemsFiltered.forEach(item => {
+            renderizarItem(partidaDiv, moduloId, partida.id, item);
+          });
+        }
+      }
+      
+      container.appendChild(partidaDiv);
+    }
+
+    function renderizarItem(container, moduloId, partidaId, item) {
+      const itemRow = document.createElement('div');
+      itemRow.className = 'item-row';
+      
+      const inputDesc = document.createElement('input');
+      inputDesc.type = 'text';
+      inputDesc.placeholder = 'Descripción';
+      inputDesc.value = item.descripcion;
+      inputDesc.onchange = (e) => actualizarItem(moduloId, partidaId, item.id, 'descripcion', e.target.value);
+      
+      const inputCantidad = document.createElement('input');
+      inputCantidad.type = 'number';
+      inputCantidad.placeholder = 'Cantidad';
+      inputCantidad.value = item.cantidad;
+      inputCantidad.step = '0.01';
+      inputCantidad.onchange = (e) => actualizarItem(moduloId, partidaId, item.id, 'cantidad', e.target.value);
+      
+      const selectUnidad = document.createElement('select');
+      const unidades = ['un', 'm', 'm²', 'm³', 'kg', 'ton', 'hr', 'gl', 'gl'];
+      unidades.forEach(u => {
+        const opt = document.createElement('option');
+        opt.value = u;
+        opt.textContent = u;
+        if (u === item.unidad) opt.selected = true;
+        selectUnidad.appendChild(opt);
+      });
+      selectUnidad.onchange = (e) => actualizarItem(moduloId, partidaId, item.id, 'unidad', e.target.value);
+      
+      const inputPrecio = document.createElement('input');
+      inputPrecio.type = 'number';
+      inputPrecio.placeholder = 'Precio Unit.';
+      inputPrecio.value = item.precioUnitario;
+      inputPrecio.step = '0.01';
+      inputPrecio.onchange = (e) => actualizarItem(moduloId, partidaId, item.id, 'precioUnitario', e.target.value);
+      
+      const selectCategoria = document.createElement('select');
+      const categorias = ['Material', 'Mano de Obra', 'Subcontrato', 'Equipo'];
+      categorias.forEach(cat => {
+        const opt = document.createElement('option');
+        opt.value = cat;
+        opt.textContent = cat;
+        if (cat === item.categoria) opt.selected = true;
+        selectCategoria.appendChild(opt);
+      });
+      selectCategoria.onchange = (e) => actualizarItem(moduloId, partidaId, item.id, 'categoria', e.target.value);
+      
+      const inputProveedor = document.createElement('input');
+      inputProveedor.type = 'text';
+      inputProveedor.placeholder = 'Proveedor';
+      inputProveedor.value = item.proveedor || '';
+      inputProveedor.onchange = (e) => actualizarItem(moduloId, partidaId, item.id, 'proveedor', e.target.value);
+      inputProveedor.style.gridColumn = 'span 2';
+      
+      const btnEliminar = document.createElement('button');
+      btnEliminar.className = 'btn btn-small btn-danger';
+      btnEliminar.textContent = '🗑️';
+      btnEliminar.onclick = () => eliminarItem(moduloId, partidaId, item.id);
+      
+      itemRow.appendChild(inputDesc);
+      itemRow.appendChild(inputCantidad);
+      itemRow.appendChild(selectUnidad);
+      itemRow.appendChild(inputPrecio);
+      itemRow.appendChild(selectCategoria);
+      itemRow.appendChild(btnEliminar);
+      
+      const rowProveedor = document.createElement('div');
+      rowProveedor.className = 'item-row';
+      rowProveedor.appendChild(inputProveedor);
+      
+      container.appendChild(itemRow);
+      container.appendChild(rowProveedor);
+    }
+
+    // ==================== RESUMEN ====================
+    function actualizarResumen() {
+      calcularTotalesPorModulo();
+      renderizarSummaryCards();
+      renderizarResumenModulos();
+      renderizarTotalesFinales();
+    }
+
+    function calcularTotalesPorModulo() {
+      state.modulos.forEach(modulo => {
+        let totalMaterial = 0;
+        let totalManoObra = 0;
+        let totalSubcontrato = 0;
+        let totalEquipo = 0;
+        
+        modulo.partidas.forEach(partida => {
+          partida.items.forEach(item => {
+            const subtotal = item.cantidad * item.precioUnitario;
+            
+            switch (item.categoria) {
+              case 'Material':
+                totalMaterial += subtotal;
+                break;
+              case 'Mano de Obra':
+                totalManoObra += subtotal;
+                break;
+              case 'Subcontrato':
+                totalSubcontrato += subtotal;
+                break;
+              case 'Equipo':
+                totalEquipo += subtotal;
+                break;
+            }
+          });
+        });
+        
+        modulo.totales = {
+          material: totalMaterial,
+          manoObra: totalManoObra,
+          subcontrato: totalSubcontrato,
+          equipo: totalEquipo,
+          subtotal: totalMaterial + totalManoObra + totalSubcontrato + totalEquipo
+        };
+      });
+    }
+
+    function renderizarSummaryCards() {
+      const container = document.getElementById('summaryCards');
+      if (!container) return;
+      
+      let totalMaterial = 0;
+      let totalManoObra = 0;
+      let totalSubcontrato = 0;
+      let totalEquipo = 0;
+      
+      state.modulos.forEach(mod => {
+        if (mod.totales) {
+          totalMaterial += mod.totales.material;
+          totalManoObra += mod.totales.manoObra;
+          totalSubcontrato += mod.totales.subcontrato;
+          totalEquipo += mod.totales.equipo;
+        }
+      });
+      
+      const subtotal = totalMaterial + totalManoObra + totalSubcontrato + totalEquipo;
+      const margen = subtotal * (state.parametros.margen / 100);
+      const totalConMargen = subtotal + margen;
+      const iva = totalConMargen * (state.parametros.iva / 100);
+      const totalFinal = totalConMargen + iva;
+      
+      container.innerHTML = `
+        <div class="summary-card">
+          <h4>📦 Material</h4>
+          <div class="value">${formatearMoneda(totalMaterial)}</div>
+        </div>
+        <div class="summary-card">
+          <h4>👷 Mano de Obra</h4>
+          <div class="value">${formatearMoneda(totalManoObra)}</div>
+        </div>
+        <div class="summary-card">
+          <h4>🔧 Subcontrato</h4>
+          <div class="value">${formatearMoneda(totalSubcontrato)}</div>
+        </div>
+        <div class="summary-card">
+          <h4>🚜 Equipo</h4>
+          <div class="value">${formatearMoneda(totalEquipo)}</div>
+        </div>
+        <div class="summary-card" style="border-left-color: #28a745;">
+          <h4>💰 Total Final</h4>
+          <div class="value">${formatearMoneda(totalFinal)}</div>
+        </div>
+      `;
+    }
+
+    function renderizarResumenModulos() {
+      const container = document.getElementById('resumenModulos');
+      if (!container) return;
+      
+      if (state.modulos.length === 0) {
+        container.innerHTML = '<p style="color:#999;">No hay módulos para mostrar.</p>';
+        return;
+      }
+      
+      let html = '<table><thead><tr><th>Módulo</th><th>Material</th><th>M.O.</th><th>Subcontrato</th><th>Equipo</th><th>Subtotal</th></tr></thead><tbody>';
+      
+      state.modulos.forEach(mod => {
+        if (mod.totales) {
+          html += `
+            <tr>
+              <td><strong>${mod.nombre}</strong></td>
+              <td>${formatearMoneda(mod.totales.material)}</td>
+              <td>${formatearMoneda(mod.totales.manoObra)}</td>
+              <td>${formatearMoneda(mod.totales.subcontrato)}</td>
+              <td>${formatearMoneda(mod.totales.equipo)}</td>
+              <td><strong>${formatearMoneda(mod.totales.subtotal)}</strong></td>
+            </tr>
+          `;
+        }
+      });
+      
+      html += '</tbody></table>';
+      container.innerHTML = html;
+    }
+
+    function renderizarTotalesFinales() {
+      const container = document.getElementById('totalesFinales');
+      if (!container) return;
+      
+      let subtotal = 0;
+      state.modulos.forEach(mod => {
+        if (mod.totales) subtotal += mod.totales.subtotal;
+      });
+      
+      const margen = subtotal * (state.parametros.margen / 100);
+      const totalConMargen = subtotal + margen;
+      const iva = totalConMargen * (state.parametros.iva / 100);
+      const totalFinal = totalConMargen + iva;
+      
+      container.innerHTML = `
+        <table>
+          <tbody>
+            <tr>
+              <td><strong>Subtotal (sin margen ni IVA)</strong></td>
+              <td style="text-align: right;"><strong>${formatearMoneda(subtotal)}</strong></td>
+            </tr>
+            <tr>
+              <td>Margen (${state.parametros.margen}%)</td>
+              <td style="text-align: right;">${formatearMoneda(margen)}</td>
+            </tr>
+            <tr>
+              <td><strong>Subtotal con Margen</strong></td>
+              <td style="text-align: right;"><strong>${formatearMoneda(totalConMargen)}</strong></td>
+            </tr>
+            <tr>
+              <td>IVA (${state.parametros.iva}%)</td>
+              <td style="text-align: right;">${formatearMoneda(iva)}</td>
+            </tr>
+            <tr class="total-row">
+              <td><strong>TOTAL FINAL</strong></td>
+              <td style="text-align: right;"><strong>${formatearMoneda(totalFinal)}</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      `;
+    }
+
+    // ==================== UTILIDADES ====================
+    function formatearMoneda(valor) {
+      const simbolo = state.parametros.moneda === 'UF' ? 'UF ' : '$';
+      return `${simbolo}${valor.toLocaleString('es-CL', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
+    }
+
+    function cerrarModal(modalId) {
+      document.getElementById(modalId).style.display = 'none';
+    }
+
+    // ==================== GUARDAR / CARGAR ====================
+    function guardarProyecto() {
+      const proyecto = {
+        info: state.proyecto,
+        parametros: state.parametros,
+        modulos: state.modulos
+      };
+      
+      const dataStr = JSON.stringify(proyecto, null, 2);
+      const blob = new Blob([dataStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `presupuesto_${Date.now()}.json`;
+      a.click();
+      
+      URL.revokeObjectURL(url);
+      alert('Proyecto guardado correctamente');
+    }
+
+    function cargarProyecto() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.json';
+      
+      input.onchange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          try {
+            const proyecto = JSON.parse(event.target.result);
+            
+            state.proyecto = proyecto.info || {};
+            state.parametros = proyecto.parametros || { margen: 25, iva: 19, moneda: 'CLP' };
+            state.modulos = proyecto.modulos || [];
+            
+            document.getElementById('nombreProyecto').value = state.proyecto.nombre || '';
+            document.getElementById('clienteProyecto').value = state.proyecto.cliente || '';
+            document.getElementById('ubicacionProyecto').value = state.proyecto.ubicacion || '';
+            document.getElementById('fechaProyecto').value = state.proyecto.fecha || '';
+            document.getElementById('descripcionProyecto').value = state.proyecto.descripcion || '';
+            
+            document.getElementById('margenGeneral').value = state.parametros.margen;
+            document.getElementById('ivaGeneral').value = state.parametros.iva;
+            document.getElementById('monedaGeneral').value = state.parametros.moneda;
+            
+            renderizarModulos();
+            actualizarResumen();
+            
+            alert('Proyecto cargado correctamente');
+          } catch (err) {
+            alert('Error al cargar el proyecto: ' + err.message);
+          }
+        };
+        
+        reader.readAsText(file);
+      };
+      
+      input.click();
+    }
+
+    // ==================== EXPORTAR ====================
+    function exportarExcel() {
+      alert('Función de exportar a Excel en desarrollo');
+    }
+
+    function exportarPDF() {
+      alert('Función de exportar a PDF en desarrollo');
+    }
+  </script>
+</body>
+</html>
