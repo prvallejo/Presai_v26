@@ -363,13 +363,13 @@ body{font-family:var(--ff);color:var(--txt);font-size:calc(14px * var(--font-sca
 .cmp-prov-card{display:grid;grid-template-columns:auto 1fr auto;gap:10px 16px;align-items:center;background:var(--bg2);border:1.5px solid var(--border2);border-radius:9px;padding:12px 16px;margin-bottom:8px}
 /* ── Botón Módulos dropdown ── */
 .mod-dd-item.active-mod { background: var(--navy-lt); border-left: 3px solid var(--navy); }
-.mod-dd-item.active-mod .mod-name { color: var(--navy); }
+.mod-dd-item.active-mod .mod-name { color: var(--navy); font-weight: 700; text-decoration: underline; text-decoration-color: var(--navy); text-decoration-thickness: 2px; text-underline-offset: 3px; }
 /* Módulo activo y abierto (morado) */
-.mod-dd-item.active-mod.open-mod { background: linear-gradient(135deg, rgba(147, 51, 234, 0.15), rgba(147, 51, 234, 0.08)); border-left: 3px solid #9333ea; }
-.mod-dd-item.active-mod.open-mod .mod-name { color: #9333ea; font-weight: 600; }
+.mod-dd-item.active-mod.open-mod { background: linear-gradient(135deg, rgba(147, 51, 234, 0.2), rgba(147, 51, 234, 0.12)); border-left: 3px solid #9333ea; }
+.mod-dd-item.active-mod.open-mod .mod-name { color: #9333ea; font-weight: 700; text-decoration: underline; text-decoration-color: #9333ea; text-decoration-thickness: 2px; text-underline-offset: 3px; }
 /* Módulo activo pero no abierto (gris tenue) */
 .mod-dd-item.active-mod:not(.open-mod) { background: rgba(0,0,0,0.02); border-left: 3px solid #cbd5e1; }
-.mod-dd-item.active-mod:not(.open-mod) .mod-name { color: #64748b; }
+.mod-dd-item.active-mod:not(.open-mod) .mod-name { color: #64748b; font-weight: 700; text-decoration: underline; text-decoration-color: #cbd5e1; text-decoration-thickness: 2px; text-underline-offset: 3px; }
 .mod-btn-wrap{position:relative;display:inline-flex;align-items:center}
 .mod-btn{height:34px;padding:0 11px;border:1px solid rgba(255,255,255,0.22);border-radius:7px;background:rgba(255,255,255,0.1);cursor:pointer;display:flex;align-items:center;gap:5px;color:rgba(255,255,255,0.9);font-size:11px;font-family:var(--ff);font-weight:600;white-space:nowrap;transition:all .2s;letter-spacing:.2px}
 .mod-btn:hover{background:rgba(255,255,255,0.22);color:#fff;transform:translateY(-1px)}
@@ -2910,7 +2910,7 @@ function renderTof(id){
 	      <div class="st" id="tof-sub-${id}-${ri}">${totDisplay}</div>
 	      <button class="bs del" onclick="dtof('${id}',${ri})">×</button></div>`;
   });
-  let total=rows.reduce((x,r)=>x+(N(r.n)*N(r.a)*N(r.l)*N(r.h)),0);
+  let total=rows.filter(r=>!r._isNew).reduce((x,r)=>x+(N(r.n)*N(r.a)*N(r.l)*N(r.h)),0);
   html+=`<button class="bs addp" style="margin:10px" onclick="atof('${id}')">+ Agregar Fila</button>
     <div style="text-align:right;padding:10px;font-size:15px;font-weight:600;color:var(--navy)" id="tof-total-${id}">Total Cubicación: ${fmtQ(total)} ${esc(it.unit)}</div>`;
   document.getElementById('tof-body').innerHTML=html;
@@ -2930,7 +2930,7 @@ function utof(id,ri,f,v){
   let sub=N(r.n)*N(r.a)*N(r.l)*N(r.h);
   /* Mostrar total solo si la fila ya no es nueva (al menos un campo fue editado) */
   if(subEl)subEl.textContent=isNew?'':(sub===0?'':fmtQ(sub));
-  let total=tofData[id].reduce((x,r)=>x+(N(r.n)*N(r.a)*N(r.l)*N(r.h)),0);
+  let total=tofData[id].filter(r=>!r._isNew).reduce((x,r)=>x+(N(r.n)*N(r.a)*N(r.l)*N(r.h)),0);
   let totEl=document.getElementById(`tof-total-${id}`);
   if(totEl)totEl.textContent='Total Cubicación: '+fmtQ(total)+' '+esc(items.find(x=>x.id===id).unit);
   let it=items.find(x=>x.id===id);
@@ -2951,7 +2951,7 @@ function utofBlur(id,ri,f,v){
 function closeTofAndSave(id){
   /* Asegurar que la cantidad de la partida está actualizada antes de cerrar */
   var rows=tofData[id]||[];
-  var total=rows.reduce(function(x,r){return x+(N(r.n)*N(r.a)*N(r.l)*N(r.h));},0);
+  var total=rows.filter(function(r){return !r._isNew;}).reduce(function(x,r){return x+(N(r.n)*N(r.a)*N(r.l)*N(r.h));},0);
   var it=items.find(function(x){return x.id===id;});
   if(it&&(rows.length>0||it.isCub)){it.qty=total;it.isCub=true;}
   rb();rc();
