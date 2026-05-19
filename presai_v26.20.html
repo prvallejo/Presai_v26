@@ -5111,16 +5111,14 @@ function cmp_newSC(){
   const MM = String(now.getMonth()+1).padStart(2,'0');
   const aa = String(now.getFullYear()).slice(-2);
   const num = `SC-${hh}${mm}-${MM}${aa}`;
-  const fechaHora = new Date().toISOString();
   const sc = {
     id:'sc_'+Math.random().toString(36).substr(2,8),
     numero: num,
-    fecha: fechaHora.slice(0,10),
+    fecha: new Date().toISOString().slice(0,10),
     estado:'borrador',
     items:[],
     proveedores:[],
-    notas:'',
-    historialEstados:[{estado:'borrador',fechaHora:fechaHora}]
+    notas:''
   };
   comprasData.solicitudes.push(sc);
   markUnsaved();
@@ -5242,7 +5240,6 @@ function cmp_editSC(id){
         <div style="font-size:11px;font-weight:600;color:var(--txt2);margin-bottom:4px;font-family:var(--ff)">NOTAS / INSTRUCCIONES</div>
         <textarea id="sc-edit-notas" rows="3" style="width:100%;padding:7px 10px;border:1.5px solid var(--border2);border-radius:6px;font-family:var(--ff);font-size:13px;background:var(--bg);color:var(--txt);box-sizing:border-box;resize:vertical">${esc(sc.notas)}</textarea>
       </div>
-      ${sc.historialEstados && sc.historialEstados.length > 0 ? `<div style="padding:10px;background:var(--bg2);border-radius:6px;border:1px solid var(--border2)"><div style="font-size:10px;font-weight:600;color:var(--txt2);margin-bottom:6px;font-family:var(--ff)">REGISTRO DE CAMBIOS DE ESTADO</div><div style="font-size:11px;color:var(--txt2);font-family:var(--mono);line-height:1.6">${sc.historialEstados.map(h=>{const d=new Date(h.fechaHora);const fmt=d.toLocaleString('es-CL',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'});return `${fmt} → ${h.estado}`;}).join('<br>')}</div></div>` : ''}
       <div style="display:flex;justify-content:flex-end;gap:10px">
         <button class="btn-p" onclick="closeMod()" style="background:var(--bg2);color:var(--txt);border:1.5px solid var(--border2)">Cancelar</button>
         <button class="btn-p blue" onclick="cmp_saveSC('${id}');closeMod()">Guardar SC</button>
@@ -5255,17 +5252,12 @@ function cmp_editSC(id){
 function cmp_saveSC(id){
   const sc = comprasData.solicitudes.find(s=>s.id===id);
   if(!sc) return;
-  const estadoAnterior = sc.estado;
   sc.numero  = document.getElementById('sc-edit-num').value.trim() || sc.numero;
   sc.fecha   = document.getElementById('sc-edit-fecha').value;
   sc.estado  = document.getElementById('sc-edit-estado').value;
   sc.notas   = document.getElementById('sc-edit-notas').value.trim();
   sc.items   = Array.from(document.querySelectorAll('.sc-item-chk:checked')).map(cb=>({lmId:cb.value}));
   sc.proveedores = Array.from(document.querySelectorAll('.sc-prov-chk:checked')).map(cb=>cb.value);
-  if(sc.estado !== estadoAnterior){
-    if(!sc.historialEstados) sc.historialEstados = [];
-    sc.historialEstados.push({estado:sc.estado,fechaHora:new Date().toISOString()});
-  }
   markUnsaved(); cmp_renderSC();
 }
 
@@ -5492,7 +5484,7 @@ function cmp_crearOCdesdeSC(scId){
   const ocItems = sc.items.map(si=>{
     const m = lm.find(x=>x.id===si.lmId);
     if(!m) return null;
-    return {lmId:m.id, desc:m.desc, unit:m.unit, qty:N(m.qty), precioUnitario:0, total:0, precioRefSC:m.precioRef||0};
+    return {lmId:m.id, desc:m.desc, unit:m.unit, qty:Math.floor(N(m.qty)), precioUnitario:0, total:0, precioRefSC:m.precioRef||0};
   }).filter(Boolean);
   const oc = {
     id:'oc_'+Math.random().toString(36).substr(2,8),
@@ -5624,7 +5616,7 @@ function cmp_editOC(id){
         <td style="padding:5px 6px"><input type="checkbox" checked value="${it.lmId}" class="oc-item-chk" style="accent-color:var(--navy)" onchange="cmp_ocRecalc()"></td>
         <td style="padding:5px 6px;font-size:calc(12px * var(--font-scale));font-family:var(--ff)">${esc(it.desc)}</td>
         <td style="padding:5px 6px;font-size:calc(12px * var(--font-scale));text-align:center">${esc(it.unit)}</td>
-        <td style="padding:5px 6px"><input type="number" class="oc-qty" value="${N(it.qty)}" min="0" step="0.01" style="width:80px;padding:4px 6px;border:1.5px solid var(--border2);border-radius:6px;font-family:var(--mono);font-size:12px;background:var(--bg);color:var(--txt)" oninput="cmp_ocRecalc()"></td>
+        <td style="padding:5px 6px"><input type="number" class="oc-qty" value="${Math.floor(N(it.qty))}" min="0" step="1" style="width:80px;padding:4px 6px;border:1.5px solid var(--border2);border-radius:6px;font-family:var(--mono);font-size:12px;background:var(--bg);color:var(--txt)" oninput="cmp_ocRecalc()"></td>
         <td style="padding:5px 6px"><input type="number" class="oc-pu" value="${it.precioUnitario}" min="0" step="1" style="width:100px;padding:4px 6px;border:1.5px solid var(--border2);border-radius:6px;font-family:var(--mono);font-size:12px;background:var(--bg);color:var(--txt)" oninput="cmp_ocRecalc()"></td>
         <td style="padding:5px 6px;font-family:var(--mono);font-size:12px;text-align:right" class="oc-subtot">—</td>
       </tr>`;
@@ -6047,7 +6039,6 @@ function cmp_printOC(id){
       </div>
     </div>
     ${oc.notas?`<div style="margin-top:14px;font-size:11px;color:#555;border-top:1px solid #ddd;padding-top:10px"><span style="font-style:italic; color:#64748b;">${esc(oc.notas)}</span></div>`:''}
-    <div style="margin-top:40px;display:flex;justify-content:space-around;align-items:flex-end"><div style="text-align:center;width:220px"><div style="height:80px;display:flex;align-items:center;justify-content:center">Firma Autorizada</div><div style="border-top:1px solid #aaa;padding-top:6px;font-size:10px;color:#888;text-align:center">${esc(CFG.companyName||'Empresa')}</div></div></div>
     <script>window.onload=()=>window.print()<\/script>
   </div></body></html>`);
   win.document.close();
