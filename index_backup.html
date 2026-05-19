@@ -5514,9 +5514,6 @@ function cmp_renderOC(){
   list.innerHTML = ocs.map(oc=>{
     const prov = cmp_proveedores.find(p=>p.id===oc.proveedorId);
     const provNombre = prov ? prov.nombre : 'Sin proveedor';
-    const neto = oc.totalOC;
-    const iva = neto * 0.19;
-    const general = neto + iva;
     return `<div class="cmp-card">
       <div class="cmp-card-hdr">
         <div>
@@ -5524,10 +5521,7 @@ function cmp_renderOC(){
           <div style="font-size:calc(11px * var(--font-scale));color:var(--txt2);margin-top:2px">${oc.fecha} · ${oc.items.length} ítem${oc.items.length===1?'':'s'} · Entrega: ${oc.plazoEntrega||'—'}</div>
         </div>
         <div style="display:flex;gap:8px;align-items:center">
-          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px">
-            <div style="font-size:calc(10px * var(--font-scale));color:var(--txt2);font-family:var(--ff)">Total General:</div>
-            <span style="font-family:var(--mono);font-weight:700;color:var(--navy);font-size:calc(13px * var(--font-scale))">${fmtCLP(general)}</span>
-          </div>
+          <span style="font-family:var(--mono);font-weight:700;color:var(--navy);font-size:calc(13px * var(--font-scale))">${fmtCLP(oc.totalOC)}</span>
           <span class="cmp-estado ${oc.estado}">${oc.estado.charAt(0).toUpperCase()+oc.estado.slice(1)}</span>
           <button class="bs" onclick="cmp_editOC('${oc.id}')" style="font-size:11px;padding:4px 10px">Editar</button>
           <button class="bs" onclick="cmp_printOC('${oc.id}')" style="font-size:11px;padding:4px 10px" title="Imprimir OC">🖨</button>
@@ -5563,36 +5557,19 @@ function cmp_editOC(id){
     : '<option value="">Sin proveedores registrados</option>';
   const estadosHtml = estados.map(e=>`<option value="${e}" ${oc.estado===e?'selected':''}>${e.charAt(0).toUpperCase()+e.slice(1)}</option>`).join('');
   const lm = comprasData.listaMateriales;
-  const isFromSC = !!oc.scOrigen; /* Si tiene scOrigen, es OC creada desde SC */
   const itemsHtml = lm.length ? lm.map(m=>{
     const existing = oc.items.find(i=>i.lmId===m.id);
     const checked = existing ? 'checked' : '';
     const pu = existing ? existing.precioUnitario : m.precioRef;
     const qty = existing ? existing.qty : m.qty;
-    if(isFromSC && existing){
-      /* OC desde SC: sin checkbox, cantidad no editable, solo precio unitario editable */
-      return `<tr style="border-bottom:1px solid var(--border)">
-        <td style="padding:5px 6px"></td>
-        <td style="padding:5px 6px;font-size:calc(12px * var(--font-scale));font-family:var(--ff)">${esc(m.desc)}</td>
-        <td style="padding:5px 6px;font-size:calc(12px * var(--font-scale));text-align:center">${esc(m.unit)}</td>
-        <td style="padding:5px 6px;font-size:calc(12px * var(--font-scale));font-family:var(--mono);text-align:center;color:var(--txt);font-weight:500">${N(qty)}</td>
-        <td style="padding:5px 6px"><input type="number" class="oc-pu" value="${pu}" min="0" step="1" style="width:100px;padding:4px 6px;border:1.5px solid var(--border2);border-radius:5px;font-family:var(--mono);font-size:12px;background:var(--bg);color:var(--txt)" oninput="cmp_ocRecalc()"></td>
-        <td style="padding:5px 6px;font-family:var(--mono);font-size:12px;text-align:right" class="oc-subtot">—</td>
-      </tr>`;
-    } else if(isFromSC){
-      /* OC desde SC: ítem no incluido, no mostrar */
-      return '';
-    } else {
-      /* OC normal: con checkbox, cantidad editable, precio editable */
-      return `<tr style="border-bottom:1px solid var(--border)">
-        <td style="padding:5px 6px"><input type="checkbox" ${checked} value="${m.id}" class="oc-item-chk" style="accent-color:var(--navy)" onchange="cmp_ocRecalc()"></td>
-        <td style="padding:5px 6px;font-size:calc(12px * var(--font-scale));font-family:var(--ff)">${esc(m.desc)}</td>
-        <td style="padding:5px 6px;font-size:calc(12px * var(--font-scale));text-align:center">${esc(m.unit)}</td>
-        <td style="padding:5px 6px"><input type="number" class="oc-qty" value="${qty}" min="0" step="0.01" style="width:80px;padding:4px 6px;border:1.5px solid var(--border2);border-radius:5px;font-family:var(--mono);font-size:12px;background:var(--bg);color:var(--txt)" oninput="cmp_ocRecalc()"></td>
-        <td style="padding:5px 6px"><input type="number" class="oc-pu" value="${pu}" min="0" step="1" style="width:100px;padding:4px 6px;border:1.5px solid var(--border2);border-radius:5px;font-family:var(--mono);font-size:12px;background:var(--bg);color:var(--txt)" oninput="cmp_ocRecalc()"></td>
-        <td style="padding:5px 6px;font-family:var(--mono);font-size:12px;text-align:right" class="oc-subtot">—</td>
-      </tr>`;
-    }
+    return `<tr style="border-bottom:1px solid var(--border)">
+      <td style="padding:5px 6px"><input type="checkbox" ${checked} value="${m.id}" class="oc-item-chk" style="accent-color:var(--navy)" onchange="cmp_ocRecalc()"></td>
+      <td style="padding:5px 6px;font-size:calc(12px * var(--font-scale));font-family:var(--ff)">${esc(m.desc)}</td>
+      <td style="padding:5px 6px;font-size:calc(12px * var(--font-scale));text-align:center">${esc(m.unit)}</td>
+      <td style="padding:5px 6px"><input type="number" class="oc-qty" value="${qty}" min="0" step="0.01" style="width:80px;padding:4px 6px;border:1.5px solid var(--border2);border-radius:5px;font-family:var(--mono);font-size:12px;background:var(--bg);color:var(--txt)" oninput="cmp_ocRecalc()"></td>
+      <td style="padding:5px 6px"><input type="number" class="oc-pu" value="${pu}" min="0" step="1" style="width:100px;padding:4px 6px;border:1.5px solid var(--border2);border-radius:5px;font-family:var(--mono);font-size:12px;background:var(--bg);color:var(--txt)" oninput="cmp_ocRecalc()"></td>
+      <td style="padding:5px 6px;font-family:var(--mono);font-size:12px;text-align:right" class="oc-subtot">—</td>
+    </tr>`;
   }).join('') : '<tr><td colspan="6" style="padding:12px;color:var(--txt2);font-size:12px">Actualiza la lista de materiales primero.</td></tr>';
 
   document.getElementById('mc').innerHTML=`<div class="modal" style="max-width:700px">
@@ -5687,10 +5664,8 @@ function cmp_ocRecalc(){
     const qty = tr.querySelector('.oc-qty');
     const pu  = tr.querySelector('.oc-pu');
     const sub = tr.querySelector('.oc-subtot');
-    if(!qty||!pu||!sub) return;
-    /* Si hay checkbox, usar su estado; si no hay (OC desde SC), incluir siempre */
-    const isChecked = chk ? chk.checked : true;
-    if(isChecked){
+    if(!chk||!qty||!pu||!sub) return;
+    if(chk.checked){
       const s = N(qty.value)*N(pu.value);
       sub.textContent = fmtCLP(s);
       total += s;
@@ -5770,7 +5745,6 @@ function cmp_saveOC(id){
   /* Capturar ítems: filas de lista de materiales Y filas libres */
   const lm = comprasData.listaMateriales;
   const oldItems = oc.items || []; // Guardar items anteriores para preservar precioRefSC
-  const isFromSC = !!oc.scOrigen; /* Si tiene scOrigen, es OC creada desde SC */
   oc.items = [];
   let lmIdx = 0;
   document.querySelectorAll('#oc-items-body tr').forEach(tr=>{
@@ -5787,17 +5761,13 @@ function cmp_saveOC(id){
       }
     } else {
       /* Fila de lista de materiales */
-      if(qty&&pu&&lm[lmIdx]){
-        /* Para OC desde SC: no hay checkbox, incluir siempre; para OC normal: usar checkbox */
-        const shouldInclude = isFromSC || (chk&&chk.checked);
-        if(shouldInclude){
-          const oldItem = oldItems.find(it => it.lmId === lm[lmIdx].id);
-          const newItem = {lmId:lm[lmIdx].id, desc:lm[lmIdx].desc, unit:lm[lmIdx].unit, qty:N(qty.value), precioUnitario:N(pu.value), total:N(qty.value)*N(pu.value)};
-          if(oldItem && oldItem.precioRefSC !== undefined) {
-            newItem.precioRefSC = oldItem.precioRefSC; // Preservar precio de referencia de SC
-          }
-          oc.items.push(newItem);
+      if(chk&&chk.checked&&lm[lmIdx]){
+        const oldItem = oldItems.find(it => it.lmId === lm[lmIdx].id);
+        const newItem = {lmId:lm[lmIdx].id, desc:lm[lmIdx].desc, unit:lm[lmIdx].unit, qty:N(qty.value), precioUnitario:N(pu.value), total:N(qty.value)*N(pu.value)};
+        if(oldItem && oldItem.precioRefSC !== undefined) {
+          newItem.precioRefSC = oldItem.precioRefSC; // Preservar precio de referencia de SC
         }
+        oc.items.push(newItem);
       }
       lmIdx++;
     }
