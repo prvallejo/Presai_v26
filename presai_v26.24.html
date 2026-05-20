@@ -5148,7 +5148,7 @@ function cmp_newSC(){
     id:'sc_'+Math.random().toString(36).substr(2,8),
     numero: num,
     fecha: new Date().toISOString().slice(0,10),
-    estado:'creacion', historial: [{ fecha: new Date().toLocaleString(), estado: 'creacion' }],
+    estado:'borrador',
     items:[],
     proveedores:[],
     notas:''
@@ -5216,55 +5216,6 @@ function cmp_delSC(id){
   markUnsaved(); cmp_renderSC();
 }
 
-
-function cmp_renderHistorial(doc) {
-  if (!doc.historial) doc.historial = [{ fecha: new Date().toLocaleString(), estado: 'creacion' }];
-  const items = doc.historial.map(h => `
-    <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border);font-size:11px">
-      <span style="color:var(--txt2)">${h.fecha}</span>
-      <span style="font-weight:600;color:var(--navy)">${h.estado.toUpperCase()}</span>
-    </div>
-  `).join('');
-  
-  const uniqueStates = ['creacion', 'para aprobación', 'aprobada'];
-  const hasUnique = doc.historial.some(h => uniqueStates.includes(h.estado) && h.estado !== 'creacion');
-  // Nota: 'creacion' ya ocurrió, así que evaluamos si 'para aprobación' o 'aprobada' ya están.
-  const paraAprobacionExists = doc.historial.some(h => h.estado === 'para aprobación');
-  const aprobadaExists = doc.historial.some(h => h.estado === 'aprobada');
-
-  const availableStates = ['revisada', 'enviada', 'anulada'];
-  if (!paraAprobacionExists) availableStates.push('para aprobación');
-  if (!aprobadaExists) availableStates.push('aprobada');
-
-  const options = availableStates.map(s => `<option value="${s}">${s.charAt(0).toUpperCase() + s.slice(1)}</option>`).join('');
-
-  return `
-    <div class="no-print" style="margin-top:16px;padding-top:16px;border-top:2px dashed var(--border2)">
-      <div style="font-size:11px;font-weight:700;color:var(--navy);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px">Historial de Estados</div>
-      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:10px;max-height:120px;overflow-y:auto;margin-bottom:10px">
-        ${items}
-      </div>
-      <div style="display:flex;gap:8px;align-items:center">
-        <select id="hist-new-estado" style="flex:1;padding:6px 10px;border:1.5px solid var(--border2);border-radius:6px;font-family:var(--ff);font-size:12px;background:var(--bg);color:var(--txt)">
-          ${options}
-        </select>
-        <button class="bs addp" onclick="cmp_addHistorialEstado('${doc.id}', '${doc.id.startsWith('sc') ? 'sc' : 'oc'}')" style="font-size:11px;padding:6px 12px;background:var(--navy);color:#fff">Actualizar Estado</button>
-      </div>
-    </div>`;
-}
-
-function cmp_addHistorialEstado(id, type) {
-  const list = type === 'sc' ? comprasData.solicitudes : comprasData.ordenesCompra;
-  const doc = list.find(d => d.id === id);
-  if (!doc) return;
-  const newEstado = document.getElementById('hist-new-estado').value;
-  if (!doc.historial) doc.historial = [];
-  doc.historial.push({ fecha: new Date().toLocaleString(), estado: newEstado });
-  doc.estado = newEstado;
-  markUnsaved();
-  if (type === 'sc') cmp_editSC(id); else cmp_editOC(id);
-}
-
 function cmp_editSC(id){
   const sc = comprasData.solicitudes.find(s=>s.id===id);
   if(!sc) return;
@@ -5322,7 +5273,6 @@ function cmp_editSC(id){
         <div style="font-size:11px;font-weight:600;color:var(--txt2);margin-bottom:4px;font-family:var(--ff)">NOTAS / INSTRUCCIONES</div>
         <textarea id="sc-edit-notas" rows="3" style="width:100%;padding:7px 10px;border:1.5px solid var(--border2);border-radius:6px;font-family:var(--ff);font-size:13px;background:var(--bg);color:var(--txt);box-sizing:border-box;resize:vertical">${esc(sc.notas)}</textarea>
       </div>
-            ${cmp_renderHistorial(sc)}
       <div style="display:flex;justify-content:flex-end;gap:10px">
         <button class="btn-p" onclick="closeMod()" style="background:var(--bg2);color:var(--txt);border:1.5px solid var(--border2)">Cancelar</button>
         <button class="btn-p blue" onclick="cmp_saveSC('${id}');closeMod()">Guardar SC</button>
@@ -5416,7 +5366,7 @@ function cmp_createSCsForItem(lmId){
       id:'sc_'+Math.random().toString(36).substr(2,8),
       numero: num,
       fecha: new Date().toISOString().slice(0,10),
-      estado:'creacion', historial: [{ fecha: new Date().toLocaleString(), estado: 'creacion' }],
+      estado:'borrador',
       items:[{lmId}],
       proveedores:[provId],
       notas:''
@@ -5549,7 +5499,7 @@ function cmp_executeBulkSC(){
       id:'sc_'+Math.random().toString(36).substr(2,8),
       numero: num,
       fecha: new Date().toISOString().slice(0,10),
-      estado:'creacion', historial: [{ fecha: new Date().toLocaleString(), estado: 'creacion' }],
+      estado:'borrador',
       items: selectedIds.map(id=>({lmId:id})),
       proveedores:[provId],
       notas:''
@@ -5633,7 +5583,7 @@ function cmp_crearOCdesdeSC(scId){
     numero: num,
     fecha: new Date().toISOString().slice(0,10),
     proveedorId: sc.proveedores[0]||'',
-    estado:'creacion', historial: [{ fecha: new Date().toLocaleString(), estado: 'creacion' }],
+    estado:'emitida',
     items: ocItems,
     totalOC: 0,
     condPago:'',
@@ -5660,7 +5610,7 @@ function cmp_newOC(){
     numero: num,
     fecha: new Date().toISOString().slice(0,10),
     proveedorId:'',
-    estado:'creacion', historial: [{ fecha: new Date().toLocaleString(), estado: 'creacion' }],
+    estado:'emitida',
     items:[],
     totalOC:0,
     condPago:'',
@@ -5855,8 +5805,7 @@ function cmp_editOC(id){
         <div style="font-size:11px;font-weight:600;color:var(--txt2);margin-bottom:4px;font-family:var(--ff)">NOTAS</div>
         <textarea id="oc-edit-notas" rows="2" style="width:100%;padding:7px 10px;border:1.5px solid var(--border2);border-radius:6px;font-family:var(--ff);font-size:13px;background:var(--bg);color:var(--txt);box-sizing:border-box;resize:vertical">${esc(oc.notas)}</textarea>
       </div>
-      ${cmp_renderHistorial(oc)}
-<div style="display:flex;justify-content:flex-end;gap:10px">
+      <div style="display:flex;justify-content:flex-end;gap:10px">
         <button class="btn-p" onclick="closeMod()" style="background:var(--bg2);color:var(--txt);border:1.5px solid var(--border2)">Cancelar</button>
         <button class="btn-p amber" onclick="cmp_saveOC('${id}');closeMod()">Guardar OC</button>
       </div>
