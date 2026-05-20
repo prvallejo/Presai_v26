@@ -6177,11 +6177,13 @@ function cmp_printOC(id){
       </div>
     </div>
     
+    
     <div class="sub" style="margin-bottom:6px; font-weight:700; color:#333;">PROYECTO: ${esc(document.getElementById("pObra").value||"—")}</div>
     <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 12px;">
-      <div class="sub" style="font-weight:700; color:#333; margin-bottom:0;">UBICACIÓN PROYECTO: ${esc(document.getElementById(\'pLocation\').value||\'—\')}</div>
-      <div class="sub" style="font-weight:700; color:#333; margin-bottom:0; text-align:right;">PROFESIONAL A CARGO: ${esc(document.getElementById(\'pProf\').value||\'—\')}</div>
-    </div><div class="grid2">
+      <div class="sub" style="font-weight:700; color:#333; margin-bottom:0;">UBICACIÓN PROYECTO: ${esc(document.getElementById("pLocation").value||"—")}</div>
+      <div class="sub" style="font-weight:700; color:#333; margin-bottom:0; text-align:right;">PROFESIONAL A CARGO: ${esc(document.getElementById("pProf").value||"—")}</div>
+    </div>
+    <div class="grid2">
       <div><div class="lbl">Proveedor</div><div class="val">${esc(provNombre)}</div></div>
       <div><div class="lbl">RUT Proveedor</div><div class="val">${esc(provRut)}</div></div>
       <div><div class="lbl">Condición de Pago</div><div class="val">${esc(oc.condPago)||'—'}</div></div>
